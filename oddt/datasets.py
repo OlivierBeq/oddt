@@ -53,14 +53,24 @@ class pdbbind(object):
             'rdk': {}
         }
 
-        if version == 2007:
+        if version <= 2004:
+            raise ValueError('PDBbind version not supported')
+        if version <= 2007:
             self.pdbind_sets = ['core', 'refined', 'general']
+        elif version <= 2010:
+            self.pdbind_sets = ['core', 'refined', 'general.PL']
         else:
             self.pdbind_sets = ['core', 'refined', 'general_PL']
         for pdbind_set in self.pdbind_sets:
-            if version == 2007:
+            if version == 2004:
+                csv_file = os.path.join(self.home, 'INDEX.%i.%s.pkd'
+                                        % (version, pdbind_set))
+            elif version <= 2007:
                 csv_file = os.path.join(self.home, 'INDEX.%i.%s.data'
                                         % (version, pdbind_set))
+            elif version <= 2010:
+                csv_file = os.path.join(self.home, 'INDEX.%s.data.%i'
+                                        % (pdbind_set, version))
             elif version >= 2016:
                 csv_file = os.path.join(self.home, 'index', 'INDEX_%s_data.%i'
                                         % (pdbind_set, version))
@@ -147,6 +157,9 @@ class _pdbbind_id(object):
         f = os.path.join(self.home, self.id, '%s_ligand.sdf' % self.id)
         if os.path.isfile(f):
             return next(toolkit.readfile('sdf', f, lazy=True, opt=self.opt))
+        f = os.path.join(self.home, self.id, '%s_ligand.mol2' % self.id)
+        if os.path.isfile(f):
+            return next(toolkit.readfile('mol2', f, lazy=True, opt=self.opt))
         else:
             return None
 
