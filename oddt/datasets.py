@@ -53,9 +53,9 @@ class pdbbind(object):
             'rdk': {}
         }
 
-        if version <= 2004:
+        if version < 2004:
             raise ValueError('PDBbind version not supported')
-        if version <= 2007:
+        if version <= 2008:
             self.pdbind_sets = ['core', 'refined', 'general']
         elif version <= 2010:
             self.pdbind_sets = ['core', 'refined', 'general.PL']
