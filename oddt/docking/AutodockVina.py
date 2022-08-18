@@ -6,6 +6,7 @@ import warnings
 from tempfile import mkdtemp
 from shutil import rmtree
 from distutils.spawn import find_executable
+from tempfile import gettempdir
 
 from six import string_types
 
@@ -26,13 +27,14 @@ class autodock_vina(object):
                  num_modes=9,
                  energy_range=3,
                  seed=None,
-                 prefix_dir='/tmp',
+                 prefix_dir=None,
                  n_cpu=1,
                  executable=None,
                  autocleanup=True,
                  skip_bad_mols=True):
         """Autodock Vina docking engine, which extends it's capabilities:
         automatic box (auto-centering on ligand).
+        Other software compatible with Vina API can also be used (e.g. QuickVina).
 
         Parameters
         ----------
@@ -41,11 +43,11 @@ class autodock_vina(object):
 
         auto_ligand: oddt.toolkit.Molecule object or string (default=None)
             Ligand use to center the docking box. Either ODDT molecule or
-            a file (opened based on extesion and read to ODDT molecule).
+            a file (opened based on extension and read to ODDT molecule).
             Box is centered on geometric center of molecule.
 
         size: tuple, shape=[3] (default=(20, 20, 20))
-            Dimentions of docking box (in Angstroms)
+            Dimensions of docking box (in Angstroms)
 
         center: tuple, shape=[3] (default=(0,0,0))
             The center of docking box in cartesian space.
@@ -63,12 +65,14 @@ class autodock_vina(object):
         seed: int or None (default=None)
             Random seed for Autodock Vina
 
-        prefix_dir: string (default=/tmp)
-            Temporary directory for Autodock Vina files
+        prefix_dir: string or None (default=None)
+            Temporary directory for Autodock Vina files.
+            By default (None) system temporary directory is used,
+            for reference see `tempfile.gettempdir`.
 
         executable: string or None (default=None)
             Autodock Vina executable location in the system.
-            It's realy necessary if autodetection fails.
+            It's really necessary if autodetection fails.
 
         autocleanup: bool (default=True)
             Should the docking engine clean up after execution?
@@ -76,7 +80,7 @@ class autodock_vina(object):
         skip_bad_mols: bool (default=True)
             Should molecules that crash Autodock Vina be skipped.
         """
-        self.dir = prefix_dir
+        self.dir = prefix_dir or gettempdir()
         self._tmp_dir = None
         # define binding site
         self.size = size
@@ -92,7 +96,7 @@ class autodock_vina(object):
             self.executable = find_executable('vina')
             if not self.executable:
                 raise Exception('Could not find Autodock Vina binary.'
-                                'You have to install it globaly or supply binary'
+                                'You have to install it globally or supply binary'
                                 'full directory via `executable` parameter.')
         else:
             self.executable = executable
